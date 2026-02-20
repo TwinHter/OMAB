@@ -17,7 +17,7 @@ public class PatientsController : ApiController
         return HandleResult(result);
     }
 
-    [HttpGet("{id: int}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetPatientById([FromRoute] int id)
     {
         var result = await Sender.Send(new GetUserById.Query(id));

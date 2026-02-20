@@ -4,6 +4,7 @@
         <ProjectReference Include="..\OMAB.Application\OMAB.Application.csproj" />
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
