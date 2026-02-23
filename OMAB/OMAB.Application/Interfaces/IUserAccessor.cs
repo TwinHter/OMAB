@@ -7,5 +7,5 @@ public interface IUserAccessor
 {
     int GetCurrentUserId();
     Task<User> GetCurrentUserAsync();
-    bool CanViewUser(int targetUserId, UserRole targetUserRole);
+    bool CanViewUser(UserRole targetUserRole, UserRole? currentUserRole = null);
 }

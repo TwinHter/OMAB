@@ -21,11 +21,11 @@ public class UpdateDoctorProfile
 
             RuleFor(x => x.UpdateDto.ConsultationFee)
                 .GreaterThanOrEqualTo(0)
-                .When(x => x.UpdateDto.ConsultationFee.HasValue);
+                .When(x => x.UpdateDto != null && x.UpdateDto.ConsultationFee.HasValue);
 
             RuleFor(x => x.UpdateDto.ExperienceYears)
                 .GreaterThanOrEqualTo(0)
-                .When(x => x.UpdateDto.ExperienceYears.HasValue);
+                .When(x => x.UpdateDto != null && x.UpdateDto.ExperienceYears.HasValue);
 
             RuleFor(x => x.UpdateDto.PhoneNumber)
                 .Matches(@"^\+?[1-9]\d{1,14}$")

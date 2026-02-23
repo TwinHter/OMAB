@@ -18,18 +18,16 @@ public class GetUserById
         public async Task<Result<UserProfileDto>> Handle(Query request, CancellationToken ct)
         {
             var requester = await userAccessor.GetCurrentUserAsync();
-
             if (requester == null)
                 return Result<UserProfileDto>.Failure("Unauthorized", 401);
-            bool isAllowed = userAccessor.CanViewUser(request.UserId, requester.UserRole);
-
-            if (!isAllowed)
-                return Result<UserProfileDto>.Failure("You do not have permission to view this profile", 403);
 
             var targetUser = await userRepository.GetByIdAsync(request.UserId, ct);
-
             if (targetUser == null)
                 return Result<UserProfileDto>.Failure("User not found", 404);
+
+            bool isAllowed = userAccessor.CanViewUser(targetUser.UserRole, requester.UserRole);
+            if (!isAllowed)
+                return Result<UserProfileDto>.Failure("You do not have permission to view this profile", 403);
 
             switch (targetUser.UserRole)
             {

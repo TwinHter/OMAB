@@ -25,7 +25,7 @@ public class UpdatePatientProfile
 
             RuleFor(x => x.UpdateDto.DateOfBirth)
                 .LessThan(DateTime.Now)
-                .When(x => x.UpdateDto.DateOfBirth.HasValue);
+                .When(x => x.UpdateDto.DateOfBirth != null);
         }
     }
 

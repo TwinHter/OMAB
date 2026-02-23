@@ -46,6 +46,7 @@ public class AppDbContextInitialise
             await SeedAppointmentsAsync(cancellationToken);
             await SeedDoctorSchedulesAsync(cancellationToken);
             await SeedReviewsAsync(cancellationToken);
+            await SeedDoctorsSpecialtiesAsync(cancellationToken);
 
             _logger.LogInformation("✅ Database seeding completed.");
         }
@@ -214,6 +215,19 @@ public class AppDbContextInitialise
         );
 
         _context.Reviews.Add(review);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+    private async Task SeedDoctorsSpecialtiesAsync(CancellationToken cancellationToken)
+    {
+        if (await _context.DoctorSpecialties.AnyAsync(cancellationToken))
+            return;
+
+        var doctor = await _context.Doctors.FirstAsync(cancellationToken);
+        var specialty = await _context.Specialties.FirstAsync(cancellationToken);
+
+        var doctorSpecialty = new DoctorSpecialty(doctor.UserId, specialty.Id);
+
+        _context.DoctorSpecialties.Add(doctorSpecialty);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

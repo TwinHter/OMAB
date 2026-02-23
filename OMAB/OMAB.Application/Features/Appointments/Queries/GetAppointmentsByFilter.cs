@@ -17,28 +17,33 @@ public class GetAppointmentByFilter
     {
         public Validator()
         {
-            RuleFor(x => x.Filter.PaymentStatus).IsInEnum().When(x => x.Filter.PaymentStatus.HasValue);
-            RuleFor(x => x.Filter.Status).IsInEnum().When(x => x.Filter.Status.HasValue);
+            RuleFor(x => x.Filter.PaymentStatus)
+                .IsInEnum()
+                .When(x => x.Filter?.PaymentStatus != null);
+
+            RuleFor(x => x.Filter.Status)
+                .IsInEnum()
+                .When(x => x.Filter?.Status != null);
         }
     }
 
-    public class Handler(IAppointmentRepository appointmentRepo, IMapper mapper, IUserAccessor userAccessor)
-    : IRequestHandler<Query, Result<IEnumerable<AppointmentItemDto>>>
+
+    public class Handler(IAppointmentRepository appointmentRepo, IMapper mapper, IUserAccessor userAccessor) : IRequestHandler<Query, Result<IEnumerable<AppointmentItemDto>>>
     {
         public async Task<Result<IEnumerable<AppointmentItemDto>>> Handle(Query request, CancellationToken cancellationToken)
         {
             var currentUser = await userAccessor.GetCurrentUserAsync();
 
-            if (currentUser.UserRole != Domain.Enums.UserRole.Admin && currentUser.Id != request.Filter.PatientId && currentUser.Id != request.Filter.DoctorId)
+            if (currentUser.UserRole != Domain.Enums.UserRole.Admin && currentUser.Id != request.Filter?.PatientId && currentUser.Id != request.Filter?.DoctorId)
             {
                 return Result<IEnumerable<AppointmentItemDto>>.Failure("Unauthorized access to appointments.", 403);
             }
             var filter = new AppointmentFilter
             {
-                PatientId = request.Filter.PatientId,
-                DoctorId = request.Filter.DoctorId,
-                Status = request.Filter.Status,
-                PaymentStatus = request.Filter.PaymentStatus
+                PatientId = request.Filter?.PatientId,
+                DoctorId = request.Filter?.DoctorId,
+                Status = request.Filter?.Status,
+                PaymentStatus = request.Filter?.PaymentStatus
             };
 
             var appointments = await appointmentRepo.GetByFilterAsync(filter, cancellationToken);
@@ -49,5 +54,4 @@ public class GetAppointmentByFilter
             return Result<IEnumerable<AppointmentItemDto>>.Success(appointmentDtos);
         }
     }
-
 }

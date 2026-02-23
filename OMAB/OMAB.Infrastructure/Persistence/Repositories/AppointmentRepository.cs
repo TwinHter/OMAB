@@ -12,7 +12,7 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
 
     public Task<Appointment?> GetFullDetailAsync(int appointmentId, CancellationToken ct = default)
     {
-        return _dbSet.Include(a => a.Prescriptions).Include(a => a.Review).Include(a => a.Patient).Include(a => a.Doctor).FirstOrDefaultAsync(a => a.Id == appointmentId, ct);
+        return _dbSet.Include(a => a.Prescriptions).Include(a => a.Review).Include(a => a.Patient).ThenInclude(a => a.User).Include(a => a.Doctor).ThenInclude(a => a.User).FirstOrDefaultAsync(a => a.Id == appointmentId, ct);
     }
 
     public async Task<IEnumerable<Appointment>> GetByFilterAsync(AppointmentFilter filter, CancellationToken ct = default)
@@ -38,7 +38,7 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
         {
             query = query.Where(a => a.PaymentStatus == filter.PaymentStatus.Value);
         }
-        return await query.ToListAsync(ct);
+        return await query.AsNoTracking().Include(a => a.Patient).ThenInclude(a => a.User).Include(a => a.Doctor).ThenInclude(a => a.User).ToListAsync(ct);
     }
 
     public Task<Appointment?> GetWithPrescriptionAsync(int appointmentId, CancellationToken ct = default)
@@ -65,6 +65,6 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
         return !await _dbSet.AnyAsync(a =>
             a.DoctorId == doctorId &&
             a.Status == AppointmentStatus.Scheduled &&
-            ((a.AppointmentDate < endTime) && (a.AppointmentEndTime > startTime)), ct);
+            (a.AppointmentDate < endTime) && (a.AppointmentEndTime > startTime), ct);
     }
 }

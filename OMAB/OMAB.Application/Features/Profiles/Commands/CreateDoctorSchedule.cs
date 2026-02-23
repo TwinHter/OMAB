@@ -8,7 +8,7 @@ namespace OMAB.Application.Features.Profiles.Commands;
 
 public class CreateDoctorSchedule
 {
-    public record Command(int DoctorId, DayOfWeek DayOfWeek, TimeSpan StartTime, TimeSpan EndTime, int SlotDurationInMinutes = 30) : IRequest<Result<Unit>>;
+    public record Command(DayOfWeek DayOfWeek, TimeSpan StartTime, TimeSpan EndTime, int SlotDurationInMinutes = 30) : IRequest<Result<Unit>>;
 
     public class Validator : AbstractValidator<Command>
     {
@@ -26,11 +26,11 @@ public class CreateDoctorSchedule
     {
         public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
-            int currentUserId = userAccessor.GetCurrentUserId();
-            if (currentUserId != request.DoctorId)
-                return Result<Unit>.Failure("Not Authorized", 403);
+            var currentUser = await userAccessor.GetCurrentUserAsync();
+            if (currentUser.UserRole != Domain.Enums.UserRole.Doctor)
+                return Result<Unit>.Failure("Only doctors can create schedules", 403);
 
-            var doctor = await doctorRepository.GetByIdWithSchedulesAsync(request.DoctorId, cancellationToken);
+            var doctor = await doctorRepository.GetByIdWithSchedulesAsync(currentUser.Id, cancellationToken);
 
             if (doctor == null)
                 return Result<Unit>.Failure("Doctor not found", 404);

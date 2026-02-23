@@ -1,5 +1,5 @@
-using System;
 using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 
 namespace OMAB.Application.Cores;
@@ -10,7 +10,6 @@ public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TReq
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        // 1. Nếu không có validator nào cho command này thì cho qua
         if (!validators.Any())
             return await next();
 
@@ -25,8 +24,29 @@ public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TReq
             .ToList();
 
         if (failures.Any())
-            throw new ValidationException(failures);
+            return CreateValidationResponse(failures);
 
         return await next();
+    }
+    private static TResponse CreateValidationResponse(IEnumerable<ValidationFailure> failures)
+    {
+        var responseType = typeof(TResponse);
+        if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<>))
+        {
+            // 1. Lấy thông báo lỗi (Gộp các lỗi lại thành 1 chuỗi)
+            var errorMessage = string.Join("; ", failures.Select(f => f.ErrorMessage));
+            var statusCode = 400;
+
+            var resultTypeArg = responseType.GetGenericArguments()[0];
+
+            var failureMethod = responseType.GetMethod("Failure");
+
+            if (failureMethod != null)
+            {
+                return (TResponse)failureMethod.Invoke(null, new object[] { errorMessage, statusCode })!;
+            }
+        }
+
+        throw new ValidationException(failures);
     }
 }

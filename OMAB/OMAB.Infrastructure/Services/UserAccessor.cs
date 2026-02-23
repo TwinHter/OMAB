@@ -11,19 +11,19 @@ namespace OMAB.Infrastructure.Persistence.Services;
 
 public class UserAccessor(IHttpContextAccessor httpContextAccessor, AppDbContext context) : IUserAccessor
 {
-    public bool CanViewUser(int targetUserId, UserRole targetUserRole)
+    public bool CanViewUser(UserRole targetUserRole, UserRole? currentUserRole = null)
     {
-        var currentUserId = GetCurrentUserId();
-        var currentUser = GetCurrentUserAsync().Result;
+        if (currentUserRole == null)
+            currentUserRole = GetCurrentUserAsync().Result.UserRole;
 
-        if (currentUser.UserRole == UserRole.Admin)
+        if (currentUserRole == UserRole.Admin)
             return true;
 
-        if (currentUser.UserRole == UserRole.Doctor)
+        if (currentUserRole == UserRole.Doctor)
             return targetUserRole is UserRole.Doctor or UserRole.Patient;
 
-        if (currentUser.UserRole == UserRole.Patient)
-            return targetUserId == currentUserId;
+        if (currentUserRole == UserRole.Patient)
+            return targetUserRole == UserRole.Doctor;
 
         return false;
     }
