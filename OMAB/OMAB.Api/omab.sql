@@ -1,0 +1,1 @@
+UPDATE Doctors SET ReviewCount = 2, Rating = 4.5 WHERE UserId = 2;

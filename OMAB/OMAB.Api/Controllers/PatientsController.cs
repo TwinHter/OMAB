@@ -10,20 +10,6 @@ namespace OMAB.Api.Controllers;
 [ApiController]
 public class PatientsController : ApiController
 {
-    [HttpGet("profile")]
-    public async Task<IActionResult> GetCurrentPatientProfile()
-    {
-        var result = await Sender.Send(new GetCurrentUser.Query());
-        return HandleResult(result);
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetPatientById([FromRoute] int id)
-    {
-        var result = await Sender.Send(new GetUserById.Query(id));
-        return HandleResult(result);
-    }
-
     [HttpPut("profile")]
     public async Task<IActionResult> UpdatePatientProfile([FromBody] UpdatePatientProfile.Command command)
     {

@@ -11,20 +11,6 @@ namespace OMAB.Api.Controllers;
 [ApiController]
 public class DoctorsController : ApiController
 {
-    [HttpGet("profile")]
-    public async Task<IActionResult> GetCurrentDoctorProfile()
-    {
-        var result = await Sender.Send(new GetCurrentUser.Query());
-        return HandleResult(result);
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetDoctorById([FromRoute] int id)
-    {
-        var result = await Sender.Send(new GetUserById.Query(id));
-        return HandleResult(result);
-    }
-
     [HttpPost("filter")]
     public async Task<IActionResult> GetDoctorsByFilter([FromBody] GetDoctorsByFilter.Query query)
     {
@@ -53,6 +39,13 @@ public class DoctorsController : ApiController
         return HandleResult(result);
     }
 
+    [HttpGet("schedules/{doctorId:int?}")]
+    public async Task<IActionResult> GetDoctorSchedules([FromRoute] int? doctorId = null)
+    {
+        var query = new GetDoctorSchedules.Query(doctorId);
+        var result = await Sender.Send(query);
+        return HandleResult(result);
+    }
     [HttpPost("schedules")]
     public async Task<IActionResult> CreateDoctorSchedule([FromBody] CreateDoctorSchedule.Command command)
     {
@@ -68,7 +61,7 @@ public class DoctorsController : ApiController
     }
 
     [HttpGet("{doctorId:int}/reviews")]
-    public async Task<IActionResult> GetDoctorReviews([FromHeader] int doctorId)
+    public async Task<IActionResult> GetDoctorReviews([FromRoute] int doctorId)
     {
         var result = await Sender.Send(new GetReviewByDoctorId.Query(doctorId));
         return HandleResult(result);

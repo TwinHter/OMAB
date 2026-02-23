@@ -2,6 +2,8 @@ using OMAB.Infrastructure.Persistence;
 using OMAB.Application;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using OMAB.Application.Cores;
+using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 
@@ -10,6 +12,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddControllers();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    // Ngăn ASP.NET Core tự động phản hồi lỗi 400 khi Model không khớp
+    options.SuppressModelStateInvalidFilter = true; 
+});
 
 builder.Services.AddSwaggerGen(static option =>
 {
@@ -57,9 +64,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 // app.UseHttpsRedirection();
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
 
+        var response = Result<string>.Failure("An unexpected error occurred.", 500);
+
+        await context.Response.WriteAsJsonAsync(response);
+    });
+});
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
