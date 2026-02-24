@@ -34,15 +34,17 @@ public class UserAccessor(IHttpContextAccessor httpContextAccessor, AppDbContext
         return await context.Users.FindAsync(userId) ?? throw new UnauthorizedAccessException("Có lỗi khi lấy thông tin người dùng.");
     }
 
-    public int GetCurrentUserId()
+    public int? GetCurrentUserId()
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+        var userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
 
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new UnauthorizedAccessException("Người dùng chưa đăng nhập hoặc Token không hợp lệ.");
-        }
+        return userId != null ? int.Parse(userId.Value) : throw new UnauthorizedAccessException("User ID not found in token.");
+    }
 
-        return userId;
+    public UserRole? GetCurrentUserRole()
+    {
+        var role = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role);
+
+        return role != null ? Enum.Parse<UserRole>(role.Value) : throw new UnauthorizedAccessException("User role not found in token.");
     }
 }

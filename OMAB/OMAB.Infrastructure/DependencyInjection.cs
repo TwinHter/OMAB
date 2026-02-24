@@ -22,13 +22,14 @@ public static class DependencyInjection
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 
         // DevUserAccessor for dev purposes, not implement JWT.
-        services.AddScoped<IUserAccessor, DevUserAccessor>();
+        services.AddScoped<IUserAccessor, UserAccessor>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IJwtGenerator, JwtGenerator>();
     }
 }
 

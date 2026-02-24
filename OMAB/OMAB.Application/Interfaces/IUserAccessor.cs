@@ -5,7 +5,8 @@ namespace OMAB.Application.Interfaces;
 
 public interface IUserAccessor
 {
-    int GetCurrentUserId();
+    int? GetCurrentUserId();
+    UserRole? GetCurrentUserRole();
     Task<User> GetCurrentUserAsync();
     bool CanViewUser(UserRole targetUserRole, UserRole? currentUserRole = null);
 }

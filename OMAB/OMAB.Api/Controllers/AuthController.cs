@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OMAB.API.Controllers;
@@ -24,6 +25,7 @@ public class AuthController : ApiController
         return HandleResult(result);
     }
 
+    [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePassword.Command command)
     {
@@ -31,6 +33,7 @@ public class AuthController : ApiController
         return HandleResult(result);
     }
 
+    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {

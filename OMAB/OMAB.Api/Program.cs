@@ -1,34 +1,38 @@
 using OMAB.Infrastructure.Persistence;
 using OMAB.Application;
-using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using OMAB.Application.Cores;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 
-// builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddControllers();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
-    // Ngăn ASP.NET Core tự động phản hồi lỗi 400 khi Model không khớp
-    options.SuppressModelStateInvalidFilter = true; 
+    options.SuppressModelStateInvalidFilter = true;
 });
 
-builder.Services.AddSwaggerGen(static option =>
+builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "OMAB API", Version = "v1" });
     option.CustomSchemaIds(type => type.ToString().Replace("+", "."));
 
-    option.AddSecurityDefinition("UserIdHeader", new OpenApiSecurityScheme
+    // Cấu hình định nghĩa bảo mật JWT
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Nhập User Id muốn giả lập (Ví dụ: 1, 5, 10...). Nếu không nhập sẽ mặc định là 1.",
-        Name = "x-user-id",
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n " +
+                      "Nhập 'Bearer' [space] rồi đến token của bạn.\r\n\r\n" +
+                      "Ví dụ: 'Bearer 12345abcdef'",
+        Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
     });
 
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -36,18 +40,37 @@ builder.Services.AddSwaggerGen(static option =>
         {
             new OpenApiSecurityScheme
             {
-                Name = "x-user-id",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "UserIdHeader"
-                }
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
             },
-            new string[] { }
+            new List<string>()
         }
     });
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!)),
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        ValidateLifetime = true
+    };
 });
 
 var app = builder.Build();
@@ -64,7 +87,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// app.UseHttpsRedirection();
+
 app.UseExceptionHandler(appError =>
 {
     appError.Run(async context =>
@@ -77,6 +100,7 @@ app.UseExceptionHandler(appError =>
         await context.Response.WriteAsJsonAsync(response);
     });
 });
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

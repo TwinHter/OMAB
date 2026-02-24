@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OMAB.API.Controllers;
 using OMAB.Application.Features.Appointments.Queries;
@@ -7,6 +8,7 @@ using OMAB.Application.Features.Profiles.Queries;
 
 namespace OMAB.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class DoctorsController : ApiController
@@ -25,7 +27,7 @@ public class DoctorsController : ApiController
         return HandleResult(result);
     }
 
-    [HttpPost("profile")]
+    [HttpPut("profile")]
     public async Task<IActionResult> UpdateDoctorProfile([FromBody] UpdateDoctorProfile.Command command)
     {
         var result = await Sender.Send(command);

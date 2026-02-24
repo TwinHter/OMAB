@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OMAB.API.Controllers;
@@ -7,6 +8,7 @@ using OMAB.Application.Features.Appointments.Queries;
 using OMAB.Domain.Entities;
 namespace OMAB.Api.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class AppointmentsController : ApiController

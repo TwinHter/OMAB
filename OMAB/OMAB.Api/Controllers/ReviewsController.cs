@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OMAB.API.Controllers;
 using OMAB.Application.Features.Appointments.Commands;
@@ -9,13 +10,15 @@ namespace OMAB.Api.Controllers;
 [ApiController]
 public class ReviewsController : ApiController
 {
+    [Authorize]
     [HttpPost()]
-    public async Task<IActionResult> CreatReview([FromBody] CreateReview.Command command)
+    public async Task<IActionResult> CreateReview([FromBody] CreateReview.Command command)
     {
         var result = await Sender.Send(command);
         return HandleResult(result);
     }
 
+    [Authorize]
     [HttpPut("")]
     public async Task<IActionResult> UpdateReview([FromBody] UpdateReview.Command command)
     {

@@ -9,6 +9,11 @@ namespace OMAB.Infrastructure.Services;
 
 public class DevUserAccessor(AppDbContext context, IHttpContextAccessor httpContextAccessor) : IUserAccessor
 {
+    public UserRole? GetCurrentUserRole()
+    {
+        var user = GetCurrentUserAsync().Result;
+        return user.UserRole;
+    }
     public bool CanViewUser(UserRole targetUserRole, UserRole? currentUserRole = null)
     {
         if (currentUserRole == null)
@@ -32,7 +37,7 @@ public class DevUserAccessor(AppDbContext context, IHttpContextAccessor httpCont
         return await context.Users.FindAsync(userId) ?? throw new UnauthorizedAccessException("Có lỗi khi lấy thông tin người dùng.");
     }
 
-    public int GetCurrentUserId()
+    public int? GetCurrentUserId()
     {
         var headerId = httpContextAccessor.HttpContext?.Request.Headers["x-user-id"].ToString();
 
