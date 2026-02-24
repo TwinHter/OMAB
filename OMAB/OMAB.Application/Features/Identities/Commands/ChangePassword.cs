@@ -22,11 +22,12 @@ public class ChangePassword
     {
         public async Task<Result<Unit>> Handle(Command request, CancellationToken ct)
         {
-            var currentUser = await userRepository.GetByIdAsync(userAccessor.GetCurrentUserId(), ct);
+            var currentUserId = userAccessor.GetCurrentUserId();
+            if (currentUserId == null)
+                return Result<Unit>.Failure("User not authenticated.", 401);
+            var currentUser = await userRepository.GetByIdAsync(currentUserId.Value, ct);
             if (currentUser == null)
-            {
-                return Result<Unit>.Failure("User not found.", statusCode: 404);
-            }
+                return Result<Unit>.Failure("User not found.", 404);
             if (!passwordHasher.Verify(request.CurrentPassword, currentUser.PasswordHash))
             {
                 return Result<Unit>.Failure("Current password is incorrect.", statusCode: 400);

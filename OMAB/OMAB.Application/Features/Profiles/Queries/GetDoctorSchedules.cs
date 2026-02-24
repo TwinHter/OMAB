@@ -19,10 +19,13 @@ public class GetDoctorSchedules
             if (request.DoctorId.HasValue) doctorId = request.DoctorId.Value;
             else
             {
-                var currentUser = await userAccessor.GetCurrentUserAsync();
-                if (currentUser.UserRole != Domain.Enums.UserRole.Doctor)
+                var currentUserRole = userAccessor.GetCurrentUserRole();
+                var currentUserId = userAccessor.GetCurrentUserId();
+                if (currentUserId == null)
+                    return Result<List<DoctorScheduleDto>>.Failure("User not authenticated.", 401);
+                if (currentUserRole != Domain.Enums.UserRole.Doctor)
                     return Result<List<DoctorScheduleDto>>.Failure("Only doctors can view their schedules", 403);
-                doctorId = currentUser.Id;
+                doctorId = currentUserId.Value;
             }
 
             var doctor = await doctorRepository.GetByIdWithSchedulesAsync(doctorId, cancellationToken);

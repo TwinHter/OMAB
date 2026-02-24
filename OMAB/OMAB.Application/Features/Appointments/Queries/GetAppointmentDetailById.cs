@@ -16,13 +16,14 @@ public class GetAppointmentDetailById
     {
         public async Task<Result<AppointmentDetailDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var currentUser = await userAccessor.GetCurrentUserAsync();
+            var currentUserRole = userAccessor.GetCurrentUserRole();
+            var currentUserId = userAccessor.GetCurrentUserId();
             var appointment = await appointmentRepository.GetFullDetailAsync(request.AppointmentId, cancellationToken);
 
             if (appointment == null)
                 return Result<AppointmentDetailDto>.Failure("Appointment not found", 404);
 
-            if (currentUser.UserRole != UserRole.Admin && currentUser.Id != appointment.PatientId && currentUser.Id != appointment.DoctorId)
+            if (currentUserRole != UserRole.Admin && currentUserId != appointment.PatientId && currentUserId != appointment.DoctorId)
                 return Result<AppointmentDetailDto>.Failure("Not Authorized", 403);
 
 

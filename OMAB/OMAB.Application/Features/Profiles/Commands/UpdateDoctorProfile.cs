@@ -42,7 +42,10 @@ public class UpdateDoctorProfile
         public async Task<Result<int>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetCurrentUserId();
-            var doctor = await doctorRepository.GetDoctorWithSpecialtyAsync(userId);
+            if (userId == null)
+                return Result<int>.Failure("User not authenticated.", 401);
+
+            var doctor = await doctorRepository.GetDoctorWithSpecialtyAsync(userId.Value);
             if (doctor == null)
             {
                 return Result<int>.Failure("Doctor profile not found.", 404);
@@ -67,7 +70,7 @@ public class UpdateDoctorProfile
             {
                 return Result<int>.Failure("Failed to update doctor profile.", 500);
             }
-            return Result<int>.Success(userId);
+            return Result<int>.Success(doctor.UserId);
         }
     }
 }

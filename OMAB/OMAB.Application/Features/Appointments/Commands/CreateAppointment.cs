@@ -34,6 +34,8 @@ public class CreateAppointment
         public async Task<Result<int>> Handle(Command request, CancellationToken cancellationToken)
         {
             var currentUserId = userAccessor.GetCurrentUserId();
+            if (currentUserId == null)
+                return Result<int>.Failure("User not authenticated.", 401);
             var doctor = await doctorRepository.GetByIdAsync(request.DoctorId, cancellationToken);
             if (doctor == null)
                 return Result<int>.Failure("Doctor not found.", 404);
@@ -45,7 +47,7 @@ public class CreateAppointment
 
             var apppointment = new Appointment
             (
-                patientId: currentUserId,
+                patientId: currentUserId.Value,
                 doctorId: request.DoctorId,
                 appointmentDate: request.AppointmentDate,
                 appointmentEndTime: request.AppointmentEndTime,

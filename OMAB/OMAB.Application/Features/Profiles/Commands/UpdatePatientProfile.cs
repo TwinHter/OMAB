@@ -34,7 +34,9 @@ public class UpdatePatientProfile
         public async Task<Result<int>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetCurrentUserId();
-            var patient = await patientRepository.GetPatientByIdAsync(userId);
+            if (userId == null)
+                return Result<int>.Failure("User not authenticated.", 401);
+            var patient = await patientRepository.GetPatientByIdAsync(userId.Value, cancellationToken);
             if (patient == null)
             {
                 return Result<int>.Failure("Patient profile not found.", 404);
@@ -48,12 +50,12 @@ public class UpdatePatientProfile
                 relativePhoneNumber: request.UpdateDto.RelativePhoneNumber);
 
             patientRepository.Update(patient);
-            var updateResult = await unitOfWork.SaveChangesAsync();
+            var updateResult = await unitOfWork.SaveChangesAsync(cancellationToken);
             if (updateResult <= 0)
             {
                 return Result<int>.Failure("Failed to update patient profile.", 500);
             }
-            return Result<int>.Success(userId);
+            return Result<int>.Success(patient.UserId);
         }
     }
 }

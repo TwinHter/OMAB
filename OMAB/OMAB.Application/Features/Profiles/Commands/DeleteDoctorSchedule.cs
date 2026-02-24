@@ -20,7 +20,7 @@ public class DeleteDoctorSchedule
             {
                 return Result<Unit>.Failure("Doctor schedule not found", 404);
             }
-            if (userId != schedule?.DoctorId)
+            if (userId == null || userId != schedule?.DoctorId)
             {
                 return Result<Unit>.Failure("Unauthorized to delete this schedule", 403);
             }

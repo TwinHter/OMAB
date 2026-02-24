@@ -25,7 +25,9 @@ public class CreateReview
     {
         public async Task<Result<int>> Handle(Command request, CancellationToken ct)
         {
-            int userId = userAccessor.GetCurrentUserId();
+            int? userId = userAccessor.GetCurrentUserId();
+            if (userId == null)
+                return Result<int>.Failure("User not authenticated.", 401);
             var appointment = await appointmentRepository.GetWithReviewAsync(request.AppointmentId, ct);
             if (appointment is null)
                 return Result<int>.Failure("Appointment not found.", 404);

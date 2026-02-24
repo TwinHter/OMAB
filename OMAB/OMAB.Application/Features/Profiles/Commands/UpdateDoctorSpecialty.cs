@@ -12,7 +12,10 @@ public class UpdateDoctorSpecialty
     {
         public async Task<Result<int>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var doctor = await doctorRepository.GetByIdAsync(userAccessor.GetCurrentUserId(), cancellationToken);
+            var userId = userAccessor.GetCurrentUserId();
+            if (userId == null)
+                return Result<int>.Failure("User not authenticated.", 401);
+            var doctor = await doctorRepository.GetByIdAsync(userId.Value, cancellationToken);
             if (doctor == null)
             {
                 return Result<int>.Failure("Doctor not found.", 404);

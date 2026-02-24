@@ -26,11 +26,14 @@ public class CreateDoctorSchedule
     {
         public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var currentUser = await userAccessor.GetCurrentUserAsync();
-            if (currentUser.UserRole != Domain.Enums.UserRole.Doctor)
+            int? currentUserId = userAccessor.GetCurrentUserId();
+            if (currentUserId == null)
+                return Result<Unit>.Failure("User not authenticated", 401);
+            var currentUserRole = userAccessor.GetCurrentUserRole();
+            if (currentUserRole != Domain.Enums.UserRole.Doctor)
                 return Result<Unit>.Failure("Only doctors can create schedules", 403);
 
-            var doctor = await doctorRepository.GetByIdWithSchedulesAsync(currentUser.Id, cancellationToken);
+            var doctor = await doctorRepository.GetByIdWithSchedulesAsync(currentUserId.Value, cancellationToken);
 
             if (doctor == null)
                 return Result<Unit>.Failure("Doctor not found", 404);

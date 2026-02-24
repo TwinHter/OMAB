@@ -19,7 +19,9 @@ public class GetCurrentUser
         public async Task<Result<UserProfileDto>> Handle(Query request, CancellationToken ct)
         {
             var userId = userAccessor.GetCurrentUserId();
-            var user = await userRepository.GetByIdAsync(userId, ct);
+            if (userId == null)
+                return Result<UserProfileDto>.Failure("User not authenticated.", 401);
+            var user = await userRepository.GetByIdAsync(userId.Value, ct);
 
             if (user == null)
                 return Result<UserProfileDto>.Failure("User not found", 404);
@@ -27,7 +29,7 @@ public class GetCurrentUser
             switch (user.UserRole)
             {
                 case UserRole.Doctor:
-                    var doctor = await doctorRepository.GetDoctorWithSpecialtyAsync(userId, ct);
+                    var doctor = await doctorRepository.GetDoctorWithSpecialtyAsync(userId.Value, ct);
 
                     if (doctor == null)
                         return Result<UserProfileDto>.Failure("Doctor profile data mismatch", 404);
@@ -37,7 +39,7 @@ public class GetCurrentUser
                     );
 
                 case UserRole.Patient:
-                    var patient = await patientRepository.GetByIdAsync(userId, ct);
+                    var patient = await patientRepository.GetByIdAsync(userId.Value, ct);
 
                     if (patient == null)
                         return Result<UserProfileDto>.Failure("Patient profile data mismatch", 404);

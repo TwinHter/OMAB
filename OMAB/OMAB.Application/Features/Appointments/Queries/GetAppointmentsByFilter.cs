@@ -32,9 +32,10 @@ public class GetAppointmentByFilter
     {
         public async Task<Result<IEnumerable<AppointmentItemDto>>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var currentUser = await userAccessor.GetCurrentUserAsync();
+            var currentUserRole = userAccessor.GetCurrentUserRole();
+            var currentUserId = userAccessor.GetCurrentUserId();
 
-            if (currentUser.UserRole != Domain.Enums.UserRole.Admin && currentUser.Id != request.Filter?.PatientId && currentUser.Id != request.Filter?.DoctorId)
+            if (currentUserRole != Domain.Enums.UserRole.Admin && currentUserId != request.Filter?.PatientId && currentUserId != request.Filter?.DoctorId)
             {
                 return Result<IEnumerable<AppointmentItemDto>>.Failure("Unauthorized access to appointments.", 403);
             }
